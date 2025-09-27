@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Microservicios UTEC - Dashboard Productos/Almacenes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      /* Estilos personalizados para el contenedor de la respuesta */
+      pre {
+        background-color: #1f2937; /* Gris oscuro */
+        color: #4ade80; /* Verde claro */
+        padding: 1rem;
+        border-radius: 0.5rem;
+        overflow-x: auto;
+        max-height: 300px;
+        font-family: "Consolas", "Monospace";
+        white-space: pre-wrap; /* Permite saltos de línea largos */
+      }
+      .error-message {
+        color: #f87171;
+      } /* Rojo para errores */
+      .success-message {
+        color: #4ade80;
+      } /* Verde para éxito */
+      .input-group input,
+      .input-group select {
+        margin-bottom: 8px;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+      .input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        margin-bottom: 15px;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100 p-4 md:p-8 font-sans">
+    <div class="container max-w-4xl mx-auto bg-white p-6 rounded-xl shadow-2xl">
+      <header class="mb-8">
+        <h1 class="text-4xl font-bold text-indigo-600 border-b pb-2">
+          Panel de Prueba MS Productos & Inventario 🚀
+        </h1>
+        <p class="mt-2 text-gray-600">
+          Consumiendo API en
+          <code class="text-pink-500">http://localhost:8000</code>.
+        </p>
+      </header>
+
+      <!-- Sección de Salud del Servicio -->
+      <div
+        class="service-section mb-6 p-4 border border-green-300 rounded-lg bg-green-50"
+      >
+        <h2 class="text-2xl font-semibold text-green-700">
+          🩺 1. Estado del Microservicio
+        </h2>
+        <p class="mb-3 text-sm text-gray-500">Endpoint: <code>/health</code></p>
+        <button
+          class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition duration-200"
+          onclick="fetchData('/health', 'healthData')"
+        >
+          Verificar Salud
+        </button>
+        <pre id="healthData" class="mt-3">
+Haga clic para verificar el estado de conexión a la base de datos...</pre
+        >
+      </div>
+
+      <!-- Sección de Productos -->
+      <div
+        class="service-section mb-8 p-6 border border-indigo-300 rounded-lg bg-indigo-50"
+      >
+        <h2 class="text-2xl font-semibold text-indigo-700">📦 2. Productos</h2>
+
+        <!-- CREAR Producto (POST) -->
+        <h3
+          class="text-xl font-medium text-indigo-500 mb-2 mt-4 border-b border-indigo-200 pb-1"
+        >
+          ➕ Crear Nuevo Producto (POST)
+        </h3>
+        <div class="input-group grid grid-cols-2 gap-4">
+          <input
+            type="text"
+            id="pNombre"
+            placeholder="Nombre"
+            class="border border-indigo-400 p-2 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+          <input
+            type="text"
+            id="pDescripcion"
+            placeholder="Descripción"
+            class="border border-indigo-400 p-2 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+          <input
+            type="number"
+            step="0.01"
+            id="pPeso"
+            placeholder="Peso (Float)"
+            class="border border-indigo-400 p-2 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+          <input
+            type="number"
+            step="0.01"
+            id="pVolumen"
+            placeholder="Volumen (Float)"
+            class="border border-indigo-400 p-2 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+          <input
+            type="text"
+            id="pSku"
+            placeholder="SKU (Único)"
+            class="border border-indigo-400 p-2 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+          <input
+            type="number"
+            step="0.01"
+            id="pPrecio"
+            placeholder="Precio (Float)"
+            class="border border-indigo-400 p-2 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+        </div>
+        <button
+          class="bg-pink-600 hover:bg-pink-700 text-white font-bold py-2 px-4 rounded transition duration-200 w-full mb-4"
+          onclick="createProduct()"
+        >
+          REGISTRAR NUEVO PRODUCTO (POST)
+        </button>
+        <pre id="productCreateData" class="mt-2">
+Resultado de la creación...</pre
+        >
+
+        <h3
+          class="text-xl font-medium text-indigo-500 mb-2 mt-4 border-b border-indigo-200 pb-1"
+        >
+          🔍 Consultar Productos (GET)
+        </h3>
+
+        <!-- GET Todos -->
+        <div class="mb-4">
+          <p class="mb-1 text-sm text-gray-500">
+            Endpoint: <code>/api/v1/productos/</code>
+          </p>
+          <button
+            class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded transition duration-200"
+            onclick="fetchData('/api/v1/productos', 'productosData')"
+          >
+            Obtener Todos (GET)
+          </button>
+          <pre id="productosData" class="mt-2">Resultado...</pre>
+        </div>
+
+        <!-- GET por ID -->
+        <div>
+          <p class="mb-1 text-sm text-gray-500">
+            Endpoint: <code>/api/v1/productos/{id_producto}</code>
+          </p>
+          <input
+            type="number"
+            id="productId"
+            placeholder="ID Producto (e.g., 1)"
+            class="border border-indigo-400 p-2 rounded w-40 mr-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+          <button
+            class="bg-indigo-400 hover:bg-indigo-500 text-gray-800 font-bold py-2 px-4 rounded transition duration-200"
+            onclick="fetchProductById()"
+          >
+            Consultar por ID (GET)
+          </button>
+          <pre id="productByIdData" class="mt-2">Resultado...</pre>
+        </div>
+      </div>
+
+      <!-- Sección de Almacenes -->
+      <div
+        class="service-section mb-8 p-6 border border-yellow-300 rounded-lg bg-yellow-50"
+      >
+        <h2 class="text-2xl font-semibold text-yellow-700">🏪 3. Almacenes</h2>
+
+        <!-- CREAR Almacén (POST) -->
+        <h3
+          class="text-xl font-medium text-yellow-600 mb-2 mt-4 border-b border-yellow-200 pb-1"
+        >
+          ➕ Registrar Nuevo Almacén (POST)
+        </h3>
+        <div class="input-group grid grid-cols-2 gap-4">
+          <input
+            type="text"
+            id="aNombre"
+            placeholder="Nombre"
+            class="border border-yellow-400 p-2 rounded focus:outline-none focus:ring-2 focus:ring-yellow-500"
+          />
+          <input
+            type="number"
+            id="aAgenteAliado"
+            placeholder="ID Agente Aliado (Opcional)"
+            class="border border-yellow-400 p-2 rounded focus:outline-none focus:ring-2 focus:ring-yellow-500"
+          />
+          <input
+            type="text"
+            id="aUbicacion"
+            placeholder="Ubicación"
+            class="border border-yellow-400 p-2 rounded focus:outline-none focus:ring-2 focus:ring-yellow-500"
+          />
+          <input
+            type="number"
+            id="aCapacidad"
+            placeholder="Capacidad (Int)"
+            class="border border-yellow-400 p-2 rounded focus:outline-none focus:ring-2 focus:ring-yellow-500"
+          />
+          <select
+            id="aTipo"
+            class="border border-yellow-400 p-2 rounded focus:outline-none focus:ring-2 focus:ring-yellow-500 col-span-2"
+          >
+            <option value="">-- Seleccionar Tipo --</option>
+            <option value="Principal">Principal</option>
+            <option value="Distribucion">Distribución</option>
+            <option value="Transito">Tránsito</option>
+          </select>
+        </div>
+        <button
+          class="bg-pink-600 hover:bg-pink-700 text-white font-bold py-2 px-4 rounded transition duration-200 w-full mb-4"
+          onclick="createAlmacen()"
+        >
+          REGISTRAR NUEVO ALMACÉN (POST)
+        </button>
+        <pre id="almacenCreateData" class="mt-2">
+Resultado de la creación...</pre
+        >
+
+        <h3
+          class="text-xl font-medium text-yellow-600 mb-2 mt-4 border-b border-yellow-200 pb-1"
+        >
+          🔍 Consultar Almacenes (GET)
+        </h3>
+
+        <!-- GET Todos -->
+        <div class="mb-4">
+          <p class="mb-1 text-sm text-gray-500">
+            Endpoint: <code>/api/v1/almacenes/</code>
+          </p>
+          <button
+            class="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded transition duration-200"
+            onclick="fetchData('/api/v1/almacenes', 'almacenesData')"
+          >
+            Obtener Todos (GET)
+          </button>
+          <pre id="almacenesData" class="mt-2">Resultado...</pre>
+        </div>
+
+        <!-- GET por ID -->
+        <div>
+          <p class="mb-1 text-sm text-gray-500">
+            Endpoint: <code>/api/v1/almacenes/{id_almacen}</code>
+          </p>
+          <input
+            type="number"
+            id="almacenId"
+            placeholder="ID Almacén (e.g., 1)"
+            class="border border-yellow-400 p-2 rounded w-40 mr-2 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+          />
+          <button
+            class="bg-yellow-400 hover:bg-yellow-500 text-gray-800 font-bold py-2 px-4 rounded transition duration-200"
+            onclick="fetchAlmacenById()"
+          >
+            Consultar por ID (GET)
+          </button>
+          <pre id="almacenByIdData" class="mt-2">Resultado...</pre>
+        </div>
+      </div>
+
+      <!-- Sección de Inventario -->
+      <div
+        class="service-section p-6 border border-red-300 rounded-lg bg-red-50"
+      >
+        <h2 class="text-2xl font-semibold text-red-700">
+          🛒 4. Inventario (CRUD Básico)
+        </h2>
+
+        <!-- CREAR Inventario (POST) -->
+        <h3
+          class="text-xl font-medium text-red-600 mb-2 mt-4 border-b border-red-200 pb-1"
+        >
+          ➕ Agregar Stock Inicial (POST)
+        </h3>
+        <div class="input-group grid grid-cols-3 gap-4">
+          <input
+            type="number"
+            id="iAlmacenId"
+            placeholder="ID Almacén"
+            class="border border-red-400 p-2 rounded focus:outline-none focus:ring-2 focus:ring-red-500"
+          />
+          <input
+            type="number"
+            id="iProductoId"
+            placeholder="ID Producto"
+            class="border border-red-400 p-2 rounded focus:outline-none focus:ring-2 focus:ring-red-500"
+          />
+          <input
+            type="number"
+            id="iStockDisponible"
+            placeholder="Stock Disponible"
+            class="border border-red-400 p-2 rounded focus:outline-none focus:ring-2 focus:ring-red-500"
+          />
+        </div>
+        <button
+          class="bg-pink-600 hover:bg-pink-700 text-white font-bold py-2 px-4 rounded transition duration-200 w-full mb-4"
+          onclick="createInventory()"
+        >
+          REGISTRAR STOCK INICIAL (POST)
+        </button>
+        <pre id="inventoryCreateData" class="mt-2">
+Resultado de la creación...</pre
+        >
+
+        <h3
+          class="text-xl font-medium text-red-600 mb-2 mt-4 border-b border-red-200 pb-1"
+        >
+          🔍 Consultar Inventario (GET)
+        </h3>
+
+        <!-- GET por Almacén -->
+        <div class="mb-4">
+          <p class="mb-1 text-sm text-gray-500">
+            Endpoint: <code>/api/v1/inventario/almacen/{id_almacen}</code>
+          </p>
+          <input
+            type="number"
+            id="invAlmacenId"
+            placeholder="ID Almacén (e.g., 1)"
+            class="border border-red-400 p-2 rounded w-40 mr-2 focus:outline-none focus:ring-2 focus:ring-red-500"
+          />
+          <button
+            class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition duration-200"
+            onclick="fetchInvByAlmacen()"
+          >
+            Inventario por Almacén (GET)
+          </button>
+          <pre id="invAlmacenData" class="mt-2">Resultado...</pre>
+        </div>
+
+        <!-- GET por Producto -->
+        <div>
+          <p class="mb-1 text-sm text-gray-500">
+            Endpoint: <code>/api/v1/inventario/producto/{id_producto}</code>
+          </p>
+          <input
+            type="number"
+            id="invProductId"
+            placeholder="ID Producto (e.g., 1)"
+            class="border border-red-400 p-2 rounded w-40 mr-2 focus:outline-none focus:ring-2 focus:ring-red-500"
+          />
+          <button
+            class="bg-red-400 hover:bg-red-500 text-gray-800 font-bold py-2 px-4 rounded transition duration-200"
+            onclick="fetchInvByProduct()"
+          >
+            Stock Total por Producto (GET)
+          </button>
+          <pre id="invProductData" class="mt-2">Resultado...</pre>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // CRÍTICO: BASE URL del Microservicio (donde se ejecuta el contenedor Docker)
+      // MANTENER en localhost:8000 para prueba local de Windows
+      const API_BASE_URL = "http://localhost:8000";
+
+      // =========================================================
+      // Función genérica para hacer peticiones GET
+      // =========================================================
+      async function fetchData(endpoint, outputElementId) {
+        const url = API_BASE_URL + endpoint;
+        const outputElement = document.getElementById(outputElementId);
+        outputElement.textContent = `Cargando datos desde ${url}...`;
+        outputElement.classList.remove("error-message");
+        outputElement.classList.remove("success-message");
+
+        try {
+          const response = await fetch(url);
+
+          if (!response.ok) {
+            const errorJson = await response
+              .json()
+              .catch(() => ({ detail: "No se pudo parsear el error." }));
+            const errorMessage =
+              errorJson.detail ||
+              `Error HTTP ${response.status}: ${response.statusText}`;
+            throw new Error(errorMessage);
+          }
+
+          const data = await response.json();
+          outputElement.textContent = JSON.stringify(data, null, 2);
+        } catch (error) {
+          outputElement.textContent = `❌ ERROR al conectar o procesar: ${error.message}`;
+          outputElement.classList.add("error-message");
+          console.error("Error al obtener datos:", error);
+        }
+      }
+
+      // =========================================================
+      // Función genérica para hacer peticiones POST
+      // =========================================================
+      async function postData(endpoint, data, outputElementId) {
+        const url = API_BASE_URL + endpoint;
+        const outputElement = document.getElementById(outputElementId);
+        outputElement.textContent = `Enviando datos a ${url}...`;
+        outputElement.classList.remove("error-message");
+        outputElement.classList.remove("success-message");
+
+        try {
+          const response = await fetch(url, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+          });
+
+          const responseData = await response.json();
+
+          if (!response.ok) {
+            const errorMessage =
+              responseData.detail ||
+              `Error HTTP ${response.status}: ${response.statusText}`;
+            throw new Error(errorMessage);
+          }
+
+          outputElement.textContent = `✅ CREADO: ${JSON.stringify(
+            responseData,
+            null,
+            2
+          )}`;
+          outputElement.classList.add("success-message");
+        } catch (error) {
+          outputElement.textContent = `❌ ERROR en la creación: ${error.message}`;
+          outputElement.classList.add("error-message");
+          console.error("Error al enviar datos:", error);
+        }
+      }
+
+      // =========================================================
+      // Funciones específicas para CREAR
+      // =========================================================
+      function createProduct() {
+        const data = {
+          nombre: document.getElementById("pNombre").value,
+          descripcion: document.getElementById("pDescripcion").value,
+          peso: parseFloat(document.getElementById("pPeso").value),
+          volumen: parseFloat(document.getElementById("pVolumen").value),
+          sku: document.getElementById("pSku").value,
+          precio: parseFloat(document.getElementById("pPrecio").value),
+        };
+        // Validación básica
+        if (!data.nombre || !data.sku || isNaN(data.precio)) {
+          document.getElementById("productCreateData").textContent =
+            "❌ Campos Nombre, SKU y Precio son obligatorios.";
+          document
+            .getElementById("productCreateData")
+            .classList.add("error-message");
+          return;
+        }
+        postData("/api/v1/productos/", data, "productCreateData");
+      }
+
+      function createAlmacen() {
+        const idAgenteAliado = document.getElementById("aAgenteAliado").value;
+        const data = {
+          id_agenteAliado: idAgenteAliado ? parseInt(idAgenteAliado) : null,
+          nombre: document.getElementById("aNombre").value,
+          ubicacion: document.getElementById("aUbicacion").value,
+          capacidad: parseInt(document.getElementById("aCapacidad").value),
+          tipo: document.getElementById("aTipo").value,
+        };
+        // Validación básica
+        if (
+          !data.nombre ||
+          !data.ubicacion ||
+          !data.tipo ||
+          isNaN(data.capacidad)
+        ) {
+          document.getElementById("almacenCreateData").textContent =
+            "❌ Campos Nombre, Ubicación, Capacidad y Tipo son obligatorios.";
+          document
+            .getElementById("almacenCreateData")
+            .classList.add("error-message");
+          return;
+        }
+        postData("/api/v1/almacenes/", data, "almacenCreateData");
+      }
+
+      function createInventory() {
+        const data = {
+          id_almacen: parseInt(document.getElementById("iAlmacenId").value),
+          id_producto: parseInt(document.getElementById("iProductoId").value),
+          stock_disponible: parseInt(
+            document.getElementById("iStockDisponible").value
+          ),
+          // stock_reservado se inicializa en 0 en tu backend si no se envía
+        };
+        // Validación básica
+        if (
+          isNaN(data.id_almacen) ||
+          isNaN(data.id_producto) ||
+          isNaN(data.stock_disponible)
+        ) {
+          document.getElementById("inventoryCreateData").textContent =
+            "❌ Todos los campos son obligatorios y deben ser números.";
+          document
+            .getElementById("inventoryCreateData")
+            .classList.add("error-message");
+          return;
+        }
+        // NOTA: Asumiendo que tu endpoint POST de Inventario está en /api/v1/inventario/ (o similar)
+        postData("/api/v1/inventario/", data, "inventoryCreateData");
+      }
+
+      // =========================================================
+      // Funciones específicas para consultas con ID (MANTENIDAS)
+      // =========================================================
+
+      function fetchProductById() {
+        const id = document.getElementById("productId").value;
+        if (id) {
+          fetchData(`/api/v1/productos/${id}`, "productByIdData");
+        } else {
+          document.getElementById("productByIdData").textContent =
+            "Ingrese un ID de producto válido.";
+        }
+      }
+
+      function fetchAlmacenById() {
+        const id = document.getElementById("almacenId").value;
+        if (id) {
+          fetchData(`/api/v1/almacenes/${id}`, "almacenByIdData");
+        } else {
+          document.getElementById("almacenByIdData").textContent =
+            "Ingrese un ID de almacén válido.";
+        }
+      }
+
+      function fetchInvByAlmacen() {
+        const id = document.getElementById("invAlmacenId").value;
+        if (id) {
+          fetchData(`/api/v1/inventario/almacen/${id}`, "invAlmacenData");
+        } else {
+          document.getElementById("invAlmacenData").textContent =
+            "Ingrese un ID de almacén válido para ver su inventario.";
+        }
+      }
+
+      function fetchInvByProduct() {
+        const id = document.getElementById("invProductId").value;
+        if (id) {
+          fetchData(`/api/v1/inventario/producto/${id}`, "invProductData");
+        } else {
+          document.getElementById("invProductData").textContent =
+            "Ingrese un ID de producto válido para ver su stock total.";
+        }
+      }
+    </script>
+  </body>
+</html>
